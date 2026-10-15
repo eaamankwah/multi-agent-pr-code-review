@@ -1,0 +1,532 @@
+{
+  "pullRequest": {
+    "owner": "airaamane",
+    "repo": "simple-todo-app",
+    "number": 1
+  },
+  "fileReviews": [
+    {
+      "file": "tests/fixtures/golden-dataset/sql-injection.js",
+      "codeQuality": {
+        "file": "tests/fixtures/golden-dataset/sql-injection.js",
+        "issues": [
+          {
+            "line": 13,
+            "severity": "critical",
+            "category": "security",
+            "description": "SQL Injection vulnerability: User input is directly concatenated into SQL query without any sanitization or parameterization. An attacker can inject arbitrary SQL code via the 'name' query parameter (e.g., ' OR '1'='1).",
+            "suggestion": "Use parameterized queries or prepared statements. Replace with: const query = 'SELECT id, name, email FROM users WHERE name = ?'; db.query(query, [name], (err, results) => {...}). Or use an ORM like Sequelize that handles parameterization automatically."
+          },
+          {
+            "line": 18,
+            "severity": "critical",
+            "category": "security",
+            "description": "Information disclosure: Raw error stack trace is sent to the client, which can expose sensitive server details, file paths, library versions, and internal application structure to potential attackers.",
+            "suggestion": "Log the full error server-side and send a generic error message to the client. Replace with: console.error('Database error:', err); res.status(500).json({ error: 'An error occurred while processing your request' });"
+          },
+          {
+            "line": 10,
+            "severity": "high",
+            "category": "security",
+            "description": "Missing input validation: No validation or sanitization of the 'name' parameter. The code doesn't check if the parameter exists, its type, length, or format before using it in the database query.",
+            "suggestion": "Add input validation before using user input: if (!name || typeof name !== 'string' || name.length > 100) { return res.status(400).json({ error: 'Invalid name parameter' }); }. Consider using a validation library like Joi or express-validator."
+          },
+          {
+            "line": 15,
+            "severity": "medium",
+            "category": "best-practice",
+            "description": "Using callback pattern instead of modern async/await. This makes the code harder to read and maintain, and increases the risk of callback hell as complexity grows.",
+            "suggestion": "Refactor to use async/await pattern: app.get('/users/search', async (req, res) => { try { const results = await db.query(query, [name]); res.json(results); } catch (err) { console.error('Database error:', err); res.status(500).json({ error: 'An error occurred' }); } });"
+          },
+          {
+            "line": 9,
+            "severity": "medium",
+            "category": "security",
+            "description": "Missing rate limiting and authentication/authorization. Any user can make unlimited requests to search users, which could be abused for enumeration attacks or DoS.",
+            "suggestion": "Add authentication middleware to verify user identity and rate limiting to prevent abuse: const rateLimit = require('express-rate-limit'); const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }); app.use(limiter); app.use(authenticationMiddleware);"
+          },
+          {
+            "line": 13,
+            "severity": "low",
+            "category": "style",
+            "description": "Using string concatenation with + operator instead of template literals, which is less readable and more error-prone in modern JavaScript.",
+            "suggestion": "Even though the entire approach is wrong, if concatenation were safe, use template literals: const query = `SELECT id, name, email FROM users WHERE name = '${name}'`; However, this still doesn't fix the SQL injection - parameterized queries are required."
+          },
+          {
+            "line": 21,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "No pagination or result limiting on the database query. This could cause performance issues and memory exhaustion if the result set is very large.",
+            "suggestion": "Add LIMIT clause to the query and implement pagination: SELECT id, name, email FROM users WHERE name = ? LIMIT ? OFFSET ?. Accept page and pageSize query parameters and validate them."
+          }
+        ],
+        "overallScore": 15,
+        "summary": "This file contains multiple critical security vulnerabilities including SQL injection and information disclosure that make it completely unsafe for production use. The code also uses outdated callback patterns instead of modern async/await, lacks input validation, and has no authentication or rate limiting. This appears to be an intentional vulnerable fixture for testing purposes (as noted in the header comment), but demonstrates patterns that must never be used in real applications."
+      },
+      "testCoverage": {
+        "file": "tests/fixtures/golden-dataset/sql-injection.js",
+        "hasTests": true,
+        "testFiles": [
+          "tests/golden-dataset.test.ts"
+        ],
+        "untestedPaths": [
+          {
+            "type": "edge-case",
+            "location": "Line 13 - SQL query construction",
+            "priority": "critical",
+            "reasoning": "The test only verifies that the code-quality-analyzer agent DETECTS the SQL injection vulnerability. However, there are no tests that verify the actual BEHAVIOR of this vulnerable code path - what happens when malicious input like `' OR '1'='1` is provided, or when special SQL characters are injected.",
+            "suggestedTest": "Test `app.get('/users/search')` with input `name=\"' OR '1'='1\"` to verify the SQL injection actually executes and returns all users (demonstrating the vulnerability's exploitability)"
+          },
+          {
+            "type": "edge-case",
+            "location": "Line 10 - req.query.name",
+            "priority": "high",
+            "reasoning": "No test verifies behavior when `req.query.name` is undefined, null, or contains special characters. The current test only checks if the vulnerability is detected, not how the code behaves with missing or malformed query parameters.",
+            "suggestedTest": "Test `app.get('/users/search')` with missing `name` parameter (undefined) to verify if the query becomes `SELECT ... WHERE name = 'undefined'` or throws an error"
+          },
+          {
+            "type": "branch",
+            "location": "Lines 15-20 - db.query callback error branch",
+            "priority": "critical",
+            "reasoning": "The error handling path that exposes stack traces (line 18: `res.status(500).send(err.stack)`) is not exercised by any test. The golden-dataset test only verifies static code analysis detection, not runtime behavior when database errors occur.",
+            "suggestedTest": "Test `db.query` failure scenario by mocking `db.query` to call the callback with an error, then verify that `res.status(500).send()` is called with the error stack (demonstrating the information disclosure vulnerability)"
+          },
+          {
+            "type": "branch",
+            "location": "Lines 15-21 - db.query callback success branch",
+            "priority": "high",
+            "reasoning": "No test verifies the success path where `db.query` returns results successfully. While this is the 'happy path', it should be tested to ensure the application functions as intended (even if insecurely).",
+            "suggestedTest": "Test successful query execution by mocking `db.query` to return sample user data, then verify `res.json(results)` is called with the expected data structure"
+          }
+        ],
+        "coverageEstimate": 15,
+        "summary": "The sql-injection.js fixture has minimal test coverage (approximately 15%). While the golden-dataset.test.ts validates that static analysis correctly identifies the security vulnerabilities, there are NO runtime tests exercising the actual code paths, error handling, edge cases, or demonstrating the exploitability of the vulnerabilities. All critical branches (success/error callbacks) and edge cases (malicious input, missing parameters, SQL syntax errors) remain completely untested at runtime."
+      },
+      "refactorings": {
+        "file": "tests/fixtures/golden-dataset/sql-injection.js",
+        "suggestions": [
+          {
+            "type": "modernize",
+            "location": "Lines 9-23 (app.get callback)",
+            "impact": "medium",
+            "description": "Replace callback-based database query with async/await pattern for better error handling and readability",
+            "before": "app.get('/users/search', (req, res) => {\n  const name = req.query.name;\n  const query = \"SELECT id, name, email FROM users WHERE name = '\" + name + \"'\";\n  db.query(query, (err, results) => {\n    if (err) {\n      res.status(500).send(err.stack);\n      return;\n    }\n    res.json(results);\n  });\n});",
+            "after": "app.get('/users/search', async (req, res) => {\n  const name = req.query.name;\n  const query = \"SELECT id, name, email FROM users WHERE name = '\" + name + \"'\";\n  try {\n    const results = await db.query(query);\n    res.json(results);\n  } catch (err) {\n    res.status(500).send(err.stack);\n  }\n});",
+            "benefits": "Eliminates callback nesting, improves error handling flow, aligns with modern Node.js patterns, and makes the control flow more linear and easier to follow"
+          },
+          {
+            "type": "modernize",
+            "location": "Line 13 (SQL query string)",
+            "impact": "low",
+            "description": "Replace string concatenation with template literals for improved readability",
+            "before": "const query = \"SELECT id, name, email FROM users WHERE name = '\" + name + \"'\";",
+            "after": "const query = `SELECT id, name, email FROM users WHERE name = '${name}'`;",
+            "benefits": "Template literals are more readable, less error-prone (no missing + operators), and align with ES6+ best practices"
+          },
+          {
+            "type": "simplify",
+            "location": "Lines 16-19 (error handling)",
+            "impact": "low",
+            "description": "Remove unnecessary return statement after res.send() by using early return pattern with else clause removal",
+            "before": "if (err) {\n  res.status(500).send(err.stack);\n  return;\n}\nres.json(results);",
+            "after": "if (err) {\n  return res.status(500).send(err.stack);\n}\nres.json(results);",
+            "benefits": "Combines return with response, reducing lines of code and making the early-exit pattern more explicit"
+          },
+          {
+            "type": "pattern-improvement",
+            "location": "Lines 9-23 (route handler)",
+            "impact": "low",
+            "description": "Extract route handler to a named function for better testability and separation of concerns",
+            "before": "app.get('/users/search', (req, res) => {\n  const name = req.query.name;\n  const query = \"SELECT id, name, email FROM users WHERE name = '\" + name + \"'\";\n  db.query(query, (err, results) => {\n    if (err) {\n      res.status(500).send(err.stack);\n      return;\n    }\n    res.json(results);\n  });\n});",
+            "after": "async function searchUsers(req, res) {\n  const name = req.query.name;\n  const query = `SELECT id, name, email FROM users WHERE name = '${name}'`;\n  try {\n    const results = await db.query(query);\n    res.json(results);\n  } catch (err) {\n    res.status(500).send(err.stack);\n  }\n}\n\napp.get('/users/search', searchUsers);",
+            "benefits": "Named functions are easier to test in isolation, improve stack traces, enable reusability, and make the code more maintainable"
+          }
+        ],
+        "summary": "This file uses older JavaScript patterns including callbacks, string concatenation, and CommonJS modules. The primary refactoring opportunities are modernizing to async/await (medium impact), using template literals, and extracting the route handler for testability. Note that this is a deliberately vulnerable test fixture, so security improvements (parameterized queries, error sanitization) are intentionally omitted as they would defeat the fixture's purpose."
+      }
+    },
+    {
+      "file": "tests/fixtures/golden-dataset/hardcoded-secret.py",
+      "codeQuality": {
+        "file": "tests/fixtures/golden-dataset/hardcoded-secret.py",
+        "issues": [
+          {
+            "line": 7,
+            "severity": "critical",
+            "category": "security",
+            "description": "Hardcoded Stripe API secret key (sk_live_*) committed directly in source code. This secret provides full access to production Stripe account and can be used to steal payment information, create fraudulent charges, and access customer data.",
+            "suggestion": "Move API keys to environment variables (os.environ.get('STRIPE_API_KEY')) or use a secure secrets management system (AWS Secrets Manager, HashiCorp Vault, etc.). Add this file pattern to .gitignore and rotate the exposed key immediately. Use tools like git-secrets or pre-commit hooks to prevent future commits of secrets."
+          },
+          {
+            "line": 24,
+            "severity": "critical",
+            "category": "security",
+            "description": "Use of unsafe yaml.load() without SafeLoader allows arbitrary Python code execution. An attacker controlling the YAML file can execute system commands, read sensitive files, or establish reverse shells.",
+            "suggestion": "Replace yaml.load(f) with yaml.safe_load(f) which only constructs simple Python objects and prevents arbitrary code execution. Alternatively, use yaml.load(f, Loader=yaml.SafeLoader) for explicit safe loading."
+          },
+          {
+            "line": 20,
+            "severity": "medium",
+            "category": "best-practice",
+            "description": "Import statement placed inside function body instead of at module level. This violates PEP 8 style guidelines and can cause performance issues if the function is called repeatedly.",
+            "suggestion": "Move 'import yaml' to the top of the file with other imports (after line 4). Only use local imports when necessary to resolve circular dependencies or for optional features that are rarely used."
+          },
+          {
+            "line": 22,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "File handle not explicitly closed; relies on context manager but lacks error handling. If yaml.load() raises an exception, the function will crash without returning useful error information.",
+            "suggestion": "Add try-except block to handle FileNotFoundError, yaml.YAMLError, and other exceptions. Consider: try: with open(path) as f: return yaml.safe_load(f) except FileNotFoundError: raise ValueError(f'Config file not found: {path}') except yaml.YAMLError as e: raise ValueError(f'Invalid YAML: {e}')"
+          },
+          {
+            "line": 10,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "Function charge_customer() lacks error handling for HTTP failures. The requests.post() call can raise exceptions (ConnectionError, Timeout, etc.) or return error status codes that would cause response.json() to fail or return error data.",
+            "suggestion": "Add proper error handling: 1) Check response.status_code before calling .json(), 2) Wrap in try-except to catch requests.exceptions.RequestException, 3) Use response.raise_for_status() to raise exceptions for 4xx/5xx status codes, 4) Handle JSON parsing errors with JSONDecodeError."
+          },
+          {
+            "line": 10,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "Missing type hints for function parameters and return value makes the code harder to understand and prevents static type checking tools from catching type-related bugs.",
+            "suggestion": "Add type annotations: def charge_customer(customer_id: str, amount_cents: int) -> dict: This improves code documentation and enables mypy/pyright to catch type errors."
+          },
+          {
+            "line": 19,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "Missing type hints for function parameters and return value makes the code harder to understand and prevents static type checking tools from catching type-related bugs.",
+            "suggestion": "Add type annotations: def load_config(path: str = 'config.yml') -> dict: This improves code documentation and enables static analysis."
+          }
+        ],
+        "overallScore": 15,
+        "summary": "This file contains two critical security vulnerabilities: a hardcoded production API secret key (line 7) and unsafe YAML deserialization allowing arbitrary code execution (line 24). Both issues represent immediate, exploitable attack vectors. Additionally, the code lacks basic error handling, type hints, and documentation, making it fragile and difficult to maintain. The hardcoded secret alone would warrant an immediate incident response in production."
+      },
+      "testCoverage": {
+        "file": "tests/fixtures/golden-dataset/hardcoded-secret.py",
+        "hasTests": true,
+        "testFiles": [
+          "tests/golden-dataset.test.ts"
+        ],
+        "untestedPaths": [
+          {
+            "type": "function",
+            "location": "charge_customer (lines 10-16)",
+            "priority": "high",
+            "reasoning": "The charge_customer function is never directly unit tested. The golden-dataset test only verifies that the code-quality-analyzer DETECTS the hardcoded secret, but doesn't test the function's actual behavior (successful API call, error handling, response parsing).",
+            "suggestedTest": "Test charge_customer with a mock requests.post to verify it correctly constructs the Stripe API request with proper auth tuple (STRIPE_API_KEY, ''), data payload, and returns the parsed JSON response."
+          },
+          {
+            "type": "edge-case",
+            "location": "charge_customer - network failure (line 11-15)",
+            "priority": "high",
+            "reasoning": "No tests verify behavior when requests.post raises an exception (connection timeout, network error, HTTP 4xx/5xx errors). The function has no error handling, so it would crash.",
+            "suggestedTest": "Test charge_customer when requests.post raises requests.exceptions.RequestException to verify the function propagates the exception appropriately (or add error handling and test that)."
+          },
+          {
+            "type": "function",
+            "location": "load_config (lines 19-24)",
+            "priority": "critical",
+            "reasoning": "The load_config function is never directly unit tested. The golden-dataset test only verifies that the code-quality-analyzer detects the unsafe yaml.load vulnerability, but doesn't test the function's actual behavior (successful YAML parsing, file not found errors, invalid YAML).",
+            "suggestedTest": "Test load_config with a temporary YAML file to verify it correctly parses and returns the config dictionary structure."
+          },
+          {
+            "type": "edge-case",
+            "location": "load_config - file not found (line 22-23)",
+            "priority": "critical",
+            "reasoning": "No tests verify behavior when the config file doesn't exist at the specified path. The function would raise FileNotFoundError with no handling.",
+            "suggestedTest": "Test load_config('nonexistent.yml') to verify it raises FileNotFoundError with an appropriate message, or add error handling and test that."
+          },
+          {
+            "type": "edge-case",
+            "location": "load_config - invalid YAML (line 23-24)",
+            "priority": "high",
+            "reasoning": "No tests verify behavior when the YAML file contains invalid syntax. yaml.load would raise yaml.YAMLError.",
+            "suggestedTest": "Test load_config with a file containing invalid YAML syntax (e.g., unmatched brackets) to verify error handling or exception propagation."
+          }
+        ],
+        "coverageEstimate": 15,
+        "summary": "The hardcoded-secret.py file has minimal test coverage. While the golden-dataset.test.ts suite verifies that the code-quality-analyzer agent can DETECT the security vulnerabilities (hardcoded secret and unsafe yaml.load), it does not test the actual runtime behavior of either function. Neither charge_customer nor load_config have unit tests covering their core functionality, error handling, edge cases, or input validation. Critical gaps include file I/O errors, network failures, malformed responses, and invalid inputs."
+      },
+      "refactorings": {
+        "file": "tests/fixtures/golden-dataset/hardcoded-secret.py",
+        "suggestions": [
+          {
+            "type": "modernize",
+            "location": "load_config function (lines 19-24)",
+            "impact": "high",
+            "description": "Move the import statement to the top of the file following PEP 8 conventions. Imports should be at module level, not inside functions, unless there's a specific reason (circular imports, optional dependencies).",
+            "before": "def load_config(path=\"config.yml\"):\n    import yaml\n\n    with open(path) as f:\n        return yaml.load(f)",
+            "after": "import yaml\n\ndef load_config(path=\"config.yml\"):\n    with open(path) as f:\n        return yaml.load(f)",
+            "benefits": "Improves code clarity, follows PEP 8 style guidelines, makes dependencies explicit at module level, and slightly improves performance by avoiding repeated import checks."
+          },
+          {
+            "type": "modernize",
+            "location": "load_config function (line 22)",
+            "impact": "medium",
+            "description": "Add encoding parameter to file open operation. Python 3 best practice is to explicitly specify encoding to avoid platform-dependent behavior.",
+            "before": "with open(path) as f:\n    return yaml.load(f)",
+            "after": "with open(path, encoding='utf-8') as f:\n    return yaml.load(f)",
+            "benefits": "Ensures consistent behavior across different platforms and locales, prevents encoding-related bugs, follows modern Python best practices."
+          },
+          {
+            "type": "extract-function",
+            "location": "charge_customer function (lines 10-16)",
+            "impact": "medium",
+            "description": "Extract the Stripe API endpoint URL and authentication configuration into constants or a configuration object. This separates configuration from logic and improves testability.",
+            "before": "def charge_customer(customer_id, amount_cents):\n    response = requests.post(\n        \"https://api.stripe.com/v1/charges\",\n        auth=(STRIPE_API_KEY, \"\"),\n        data={\"customer\": customer_id, \"amount\": amount_cents, \"currency\": \"usd\"},\n    )\n    return response.json()",
+            "after": "STRIPE_API_BASE_URL = \"https://api.stripe.com/v1\"\nDEFAULT_CURRENCY = \"usd\"\n\ndef charge_customer(customer_id, amount_cents):\n    response = requests.post(\n        f\"{STRIPE_API_BASE_URL}/charges\",\n        auth=(STRIPE_API_KEY, \"\"),\n        data={\"customer\": customer_id, \"amount\": amount_cents, \"currency\": DEFAULT_CURRENCY},\n    )\n    return response.json()",
+            "benefits": "Improves maintainability by centralizing configuration, makes the code more testable by allowing easy endpoint mocking, and follows the DRY principle."
+          },
+          {
+            "type": "pattern-improvement",
+            "location": "Module-level (entire file)",
+            "impact": "low",
+            "description": "Consider introducing a StripeClient class to encapsulate the API interaction logic. This would follow the Facade pattern and improve testability.",
+            "before": "def charge_customer(customer_id, amount_cents):\n    response = requests.post(\n        \"https://api.stripe.com/v1/charges\",\n        auth=(STRIPE_API_KEY, \"\"),\n        data={\"customer\": customer_id, \"amount\": amount_cents, \"currency\": \"usd\"},\n    )\n    return response.json()",
+            "after": "class StripeClient:\n    def __init__(self, api_key: str, base_url: str = \"https://api.stripe.com/v1\"):\n        self.api_key = api_key\n        self.base_url = base_url\n    \n    def charge_customer(self, customer_id: str, amount_cents: int, currency: str = \"usd\"):\n        response = requests.post(\n            f\"{self.base_url}/charges\",\n            auth=(self.api_key, \"\"),\n            data={\"customer\": customer_id, \"amount\": amount_cents, \"currency\": currency},\n        )\n        response.raise_for_status()\n        return response.json()",
+            "benefits": "Improves testability through dependency injection, encapsulates API state, makes it easier to mock in tests, and provides a cleaner interface for future API methods."
+          }
+        ],
+        "summary": "The file has several structural improvement opportunities: moving imports to module level (PEP 8 compliance), extracting configuration constants, adding error handling, and potentially introducing a client class pattern. These changes would improve maintainability and testability while following Python best practices. Note that the security vulnerabilities (hardcoded secrets, unsafe YAML loading) are intentional for this test fixture and are outside the scope of refactoring suggestions."
+      }
+    },
+    {
+      "file": "tests/fixtures/golden-dataset/xss.js",
+      "codeQuality": {
+        "file": "tests/fixtures/golden-dataset/xss.js",
+        "issues": [
+          {
+            "line": 8,
+            "severity": "critical",
+            "category": "security",
+            "description": "XSS Vulnerability: User-controlled data (comment.author and comment.text) is directly inserted into innerHTML without sanitization or escaping. An attacker can inject malicious scripts.",
+            "suggestion": "Use textContent for plain text or DOMPurify for HTML sanitization. Better approach: const div = document.createElement('div'); div.className = 'comment'; const authorSpan = document.createElement('span'); authorSpan.textContent = comment.author; const textSpan = document.createElement('span'); textSpan.textContent = ': ' + comment.text; div.appendChild(authorSpan); div.appendChild(textSpan); container.appendChild(div);"
+          },
+          {
+            "line": 13,
+            "severity": "high",
+            "category": "security",
+            "description": "XSS Vulnerability: User-controlled query parameter is directly assigned to document.title without sanitization. While document.title has limited XSS risk in modern browsers, it can still be exploited in certain contexts.",
+            "suggestion": "Sanitize or escape user input before assigning to document.title: const sanitizedQuery = query.replace(/[<>\"']/g, ''); document.title = 'Results for ' + sanitizedQuery;"
+          },
+          {
+            "line": 15,
+            "severity": "critical",
+            "category": "security",
+            "description": "XSS Vulnerability: Template literal interpolates r.title directly into HTML without escaping. If r.title contains malicious script tags, they will execute when innerHTML is set.",
+            "suggestion": "Escape HTML entities or use DOM methods: function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; } const html = results.map(r => `<li>${escapeHtml(r.title)}</li>`).join('');"
+          },
+          {
+            "line": 8,
+            "severity": "medium",
+            "category": "performance",
+            "description": "Performance Issue: Using innerHTML += in a loop causes the entire DOM subtree to be re-parsed and re-rendered on each iteration, leading to O(n²) complexity.",
+            "suggestion": "Build the complete HTML string first, or use DocumentFragment: const fragment = document.createDocumentFragment(); const div = document.createElement('div'); div.className = 'comment'; fragment.appendChild(div); container.appendChild(fragment);"
+          },
+          {
+            "line": 4,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "No null check: document.getElementById('comments') could return null if the element doesn't exist, causing a runtime error when trying to access .innerHTML.",
+            "suggestion": "Add null check and error handling: function renderComment(comment) { const container = document.getElementById('comments'); if (!container) { console.error('Comments container not found'); return; } }"
+          },
+          {
+            "line": 11,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "No null check: document.getElementById('results') could return null, causing a runtime error.",
+            "suggestion": "Add null check: function renderSearchResults(query, results) { const resultsEl = document.getElementById('results'); if (!resultsEl) { console.error('Results container not found'); return; } }"
+          },
+          {
+            "line": 4,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "No input validation: The function doesn't validate that comment parameter has required properties (author, text) before using them.",
+            "suggestion": "Add parameter validation: function renderComment(comment) { if (!comment || typeof comment.author !== 'string' || typeof comment.text !== 'string') { console.error('Invalid comment object'); return; } }"
+          }
+        ],
+        "overallScore": 15,
+        "summary": "This file contains CRITICAL security vulnerabilities with multiple XSS injection points that allow attackers to execute arbitrary JavaScript. The code demonstrates unsafe DOM manipulation patterns with direct insertion of unsanitized user input via innerHTML. While marked as an intentional test fixture, it exemplifies exactly the patterns that must never be used in production code. Additionally, the code has performance issues (innerHTML += in loops) and lacks basic error handling (null checks, input validation)."
+      },
+      "testCoverage": {
+        "file": "tests/fixtures/golden-dataset/xss.js",
+        "hasTests": true,
+        "testFiles": [
+          "tests/golden-dataset.test.ts"
+        ],
+        "untestedPaths": [
+          {
+            "type": "function",
+            "location": "renderComment(comment)",
+            "priority": "critical",
+            "reasoning": "This function is never actually executed in tests. The golden-dataset.test.ts only performs static analysis via the code-quality-analyzer agent. For a vulnerability fixture, there should be tests that verify the XSS vulnerability actually exists and can be exploited (in a safe test environment like JSDOM).",
+            "suggestedTest": "Test renderComment({ author: '<script>alert(1)</script>', text: 'test' }) in a JSDOM environment and assert that the script tag is inserted unsafely into the DOM, proving the XSS vulnerability exists in the fixture."
+          },
+          {
+            "type": "function",
+            "location": "renderSearchResults(query, results)",
+            "priority": "critical",
+            "reasoning": "Like renderComment, this function is never executed. The document.title XSS and innerHTML XSS vulnerabilities should be verified with actual test execution to ensure the fixture remains valid.",
+            "suggestedTest": "Test renderSearchResults('<img src=x onerror=alert(1)>', [{ title: '<script>xss</script>' }]) and assert that both the query XSS in document.title and the title XSS in innerHTML are present without escaping."
+          },
+          {
+            "type": "edge-case",
+            "location": "renderComment - null/undefined parameters",
+            "priority": "high",
+            "reasoning": "No tests verify behavior when comment parameter is null, undefined, or missing .author/.text properties. This would cause runtime errors (cannot read property of undefined).",
+            "suggestedTest": "Test renderComment(null) throws TypeError with message matching 'Cannot read property' and test renderComment({ author: 'Bob' }) (missing text) also throws."
+          },
+          {
+            "type": "edge-case",
+            "location": "renderComment - missing DOM element",
+            "priority": "high",
+            "reasoning": "No tests for when document.getElementById('comments') returns null. This would cause a TypeError when trying to access innerHTML on null.",
+            "suggestedTest": "Test renderComment in a JSDOM environment where element with id 'comments' does not exist, assert it throws TypeError with message 'Cannot read property 'innerHTML' of null'."
+          },
+          {
+            "type": "edge-case",
+            "location": "renderSearchResults - null DOM element",
+            "priority": "high",
+            "reasoning": "No tests for when document.getElementById('results') returns null, which would cause a TypeError.",
+            "suggestedTest": "Test renderSearchResults when element 'results' is missing from DOM, assert it throws TypeError with message 'Cannot read property 'innerHTML' of null'."
+          }
+        ],
+        "coverageEstimate": 0,
+        "summary": "The xss.js fixture file has 0% runtime test coverage. While golden-dataset.test.ts performs static analysis to verify the code-quality-analyzer agent detects the XSS vulnerabilities, no tests actually execute the renderComment or renderSearchResults functions. For a vulnerability fixture, tests should verify the XSS vulnerabilities are exploitable (in a safe JSDOM environment) and test error conditions like null parameters and missing DOM elements."
+      },
+      "refactorings": {
+        "file": "tests/fixtures/golden-dataset/xss.js",
+        "suggestions": [
+          {
+            "type": "modernize",
+            "location": "renderComment function (line 4-9)",
+            "impact": "medium",
+            "description": "Replace string concatenation with template literals for better readability and consistency with modern JavaScript practices",
+            "before": "container.innerHTML += '<div class=\"comment\">' + comment.author + ': ' + comment.text + '</div>';",
+            "after": "container.innerHTML += `<div class=\"comment\">${comment.author}: ${comment.text}</div>`;",
+            "benefits": "Improved readability, reduced error-prone quote escaping, consistent with modern ES6+ syntax used elsewhere in the codebase"
+          },
+          {
+            "type": "modernize",
+            "location": "renderSearchResults function (line 13)",
+            "impact": "low",
+            "description": "Replace string concatenation with template literal for consistency",
+            "before": "document.title = 'Results for ' + query;",
+            "after": "document.title = `Results for ${query}`;",
+            "benefits": "Consistency with template literal usage in line 15, cleaner syntax"
+          },
+          {
+            "type": "simplify",
+            "location": "renderSearchResults function (line 15)",
+            "impact": "low",
+            "description": "Use destructuring in map callback for cleaner code",
+            "before": "const html = results.map(r => `<li>${r.title}</li>`).join('');",
+            "after": "const html = results.map(({ title }) => `<li>${title}</li>`).join('');",
+            "benefits": "More explicit about which properties are being used, slightly improved readability"
+          },
+          {
+            "type": "simplify",
+            "location": "renderComment function (line 8)",
+            "impact": "low",
+            "description": "Consider using insertAdjacentHTML instead of += for better performance with innerHTML",
+            "before": "container.innerHTML += '<div class=\"comment\">' + comment.author + ': ' + comment.text + '</div>';",
+            "after": "container.insertAdjacentHTML('beforeend', `<div class=\"comment\">${comment.author}: ${comment.text}</div>`);",
+            "benefits": "Better performance as it doesn't re-parse existing HTML, more semantically clear about insertion position"
+          }
+        ],
+        "summary": "This fixture file demonstrates vulnerable patterns but could benefit from modernization to ES6+ syntax (template literals, destructuring) and improved testability through dependency injection. The main structural improvements involve consistent use of modern JavaScript features and extracting DOM dependencies to make the code more testable, even though this is intentionally vulnerable example code."
+      }
+    }
+  ],
+  "summary": {
+    "totalFiles": 3,
+    "overallScore": 15,
+    "criticalIssues": 7,
+    "highPriorityTests": 14,
+    "refactoringOpportunities": 12
+  },
+  "recommendations": [
+    {
+      "priority": "critical",
+      "category": "Security",
+      "description": "SQL Injection and XSS vulnerabilities allow arbitrary code execution and data exfiltration. Implement parameterized queries, input validation, and output encoding across all user-facing endpoints.",
+      "files": [
+        "tests/fixtures/golden-dataset/sql-injection.js",
+        "tests/fixtures/golden-dataset/xss.js"
+      ]
+    },
+    {
+      "priority": "critical",
+      "category": "Secrets Management",
+      "description": "Hardcoded production API keys (Stripe sk_live_*) expose the entire payment infrastructure. Immediately rotate exposed credentials, migrate secrets to environment variables or secrets management service, and implement pre-commit hooks to prevent future secret leaks.",
+      "files": [
+        "tests/fixtures/golden-dataset/hardcoded-secret.py"
+      ]
+    },
+    {
+      "priority": "critical",
+      "category": "Deserialization",
+      "description": "Unsafe YAML deserialization (yaml.load without SafeLoader) enables Remote Code Execution. Replace all yaml.load() calls with yaml.safe_load() to prevent arbitrary code execution attacks.",
+      "files": [
+        "tests/fixtures/golden-dataset/hardcoded-secret.py"
+      ]
+    },
+    {
+      "priority": "high",
+      "category": "Information Disclosure",
+      "description": "Raw error stack traces are exposed to clients, revealing internal system architecture and file paths. Implement proper error handling that logs detailed errors server-side while returning generic messages to clients.",
+      "files": [
+        "tests/fixtures/golden-dataset/sql-injection.js"
+      ]
+    },
+    {
+      "priority": "high",
+      "category": "Testing",
+      "description": "Test coverage is critically low (0-15%). Add runtime unit tests for all functions, error conditions, and edge cases. Current tests only perform static analysis and don't verify actual code behavior.",
+      "files": [
+        "tests/fixtures/golden-dataset/sql-injection.js",
+        "tests/fixtures/golden-dataset/hardcoded-secret.py",
+        "tests/fixtures/golden-dataset/xss.js"
+      ]
+    },
+    {
+      "priority": "medium",
+      "category": "Modernization",
+      "description": "Legacy callback patterns and outdated syntax reduce code maintainability. Refactor to async/await, use ES6+ template literals, add type hints (Python) and TypeScript definitions (JavaScript), and extract reusable functions.",
+      "files": [
+        "tests/fixtures/golden-dataset/sql-injection.js",
+        "tests/fixtures/golden-dataset/hardcoded-secret.py",
+        "tests/fixtures/golden-dataset/xss.js"
+      ]
+    },
+    {
+      "priority": "medium",
+      "category": "Input Validation",
+      "description": "Missing input validation and sanitization throughout the codebase. Implement comprehensive validation for all user inputs, including type checking, length limits, format validation, and null/undefined guards.",
+      "files": [
+        "tests/fixtures/golden-dataset/sql-injection.js",
+        "tests/fixtures/golden-dataset/xss.js"
+      ]
+    },
+    {
+      "priority": "low",
+      "category": "Error Handling",
+      "description": "Insufficient error handling for file I/O, network requests, and DOM operations. Add try-catch blocks, null checks for DOM elements, and handle edge cases like missing files, network failures, and malformed responses.",
+      "files": [
+        "tests/fixtures/golden-dataset/hardcoded-secret.py",
+        "tests/fixtures/golden-dataset/xss.js"
+      ]
+    }
+  ],
+  "metadata": {
+    "analyzedAt": "2026-09-06T05:37:00.000Z",
+    "duration": 771424,
+    "agentVersions": {
+      "code-quality-analyzer": "1.0.0",
+      "test-coverage-analyzer": "1.0.0",
+      "refactoring-suggester": "1.0.0"
+    }
+  }
+}

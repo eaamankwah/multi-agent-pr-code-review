@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Review Report</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #f8f9fa;
+      color: #212529;
+    }
+    h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 12px; }
+    .summary {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin: 24px 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .metric { text-align: center; }
+    .metric-value { font-size: 2em; font-weight: bold; color: #3498db; }
+    .metric-label { color: #6c757d; font-size: 0.9em; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 12px; margin: 8px 0; border-radius: 4px; background: white; }
+    .rec-critical { border-left: 4px solid #e74c3c; }
+    .rec-high { border-left: 4px solid #f39c12; }
+    .rec-medium { border-left: 4px solid #3498db; }
+    .rec-low { border-left: 4px solid #27ae60; }
+    .priority { font-weight: bold; margin-right: 8px; }
+    .rec-critical .priority { color: #e74c3c; }
+    .rec-high .priority { color: #f39c12; }
+    .rec-medium .priority { color: #3498db; }
+    .rec-low .priority { color: #27ae60; }
+    footer { text-align: center; color: #6c757d; margin-top: 32px; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Code Review Report</h1>
+  
+  <div class="summary">
+    <div class="metric">
+      <div class="metric-value">15</div>
+      <div class="metric-label">Overall Score</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">3</div>
+      <div class="metric-label">Files Reviewed</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">7</div>
+      <div class="metric-label">Critical Issues</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">14</div>
+      <div class="metric-label">Tests Needed</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">12</div>
+      <div class="metric-label">Refactorings</div>
+    </div>
+  </div>
+
+  <h2>🎯 Top Recommendations</h2>
+  <ul>
+      <li class="rec-critical">
+        <span class="priority">[CRITICAL]</span>
+        <strong>Security</strong>: SQL Injection and XSS vulnerabilities allow arbitrary code execution and data exfiltration. Implement parameterized queries, input validation, and output encoding across all user-facing endpoints.
+        <br><small>Files: tests/fixtures/golden-dataset/sql-injection.js, tests/fixtures/golden-dataset/xss.js</small>
+      </li>
+    
+      <li class="rec-critical">
+        <span class="priority">[CRITICAL]</span>
+        <strong>Secrets Management</strong>: Hardcoded production API keys (Stripe sk_live_*) expose the entire payment infrastructure. Immediately rotate exposed credentials, migrate secrets to environment variables or secrets management service, and implement pre-commit hooks to prevent future secret leaks.
+        <br><small>Files: tests/fixtures/golden-dataset/hardcoded-secret.py</small>
+      </li>
+    
+      <li class="rec-critical">
+        <span class="priority">[CRITICAL]</span>
+        <strong>Deserialization</strong>: Unsafe YAML deserialization (yaml.load without SafeLoader) enables Remote Code Execution. Replace all yaml.load() calls with yaml.safe_load() to prevent arbitrary code execution attacks.
+        <br><small>Files: tests/fixtures/golden-dataset/hardcoded-secret.py</small>
+      </li>
+    
+      <li class="rec-high">
+        <span class="priority">[HIGH]</span>
+        <strong>Information Disclosure</strong>: Raw error stack traces are exposed to clients, revealing internal system architecture and file paths. Implement proper error handling that logs detailed errors server-side while returning generic messages to clients.
+        <br><small>Files: tests/fixtures/golden-dataset/sql-injection.js</small>
+      </li>
+    
+      <li class="rec-high">
+        <span class="priority">[HIGH]</span>
+        <strong>Testing</strong>: Test coverage is critically low (0-15%). Add runtime unit tests for all functions, error conditions, and edge cases. Current tests only perform static analysis and don't verify actual code behavior.
+        <br><small>Files: tests/fixtures/golden-dataset/sql-injection.js, tests/fixtures/golden-dataset/hardcoded-secret.py, tests/fixtures/golden-dataset/xss.js</small>
+      </li>
+    </ul>
+
+  <footer>
+    Generated at 2026-09-06T05:37:00.000Z • Duration: 771424ms
+  </footer>
+
+  <h2>🧭 Agent Execution Trace</h2>
+  <pre class="mermaid">
+sequenceDiagram
+    participant Orchestrator as Orchestrator
+    participant a507d98 as a507d98
+    participant ac89d77 as ac89d77
+    participant af4f43a as af4f43a
+    participant code_quality_analyzer as code-quality-analyzer
+    participant test_coverage_analyzer as test-coverage-analyzer
+    participant refactoring_suggester as refactoring-suggester
+    participant a666cde as a666cde
+    participant a939b0d as a939b0d
+    participant a60a547 as a60a547
+    participant a94d04f as a94d04f
+    participant a6e9f29 as a6e9f29
+    participant a6f48f7 as a6f48f7
+    participant a4d8402 as a4d8402
+    participant a52b97c as a52b97c
+    participant ae7414f as ae7414f
+    Orchestrator->>Orchestrator: Bash (description=Print current working directory)
+    Orchestrator->>Orchestrator: Bash (description=List files in starter directory)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/README.md)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/package.json)
+    Orchestrator->>Orchestrator: Glob (pattern=**/lesson-00*/**)
+    Orchestrator->>Orchestrator: Bash (description=Find warmup lesson directories)
+    Orchestrator->>Orchestrator: mcp__github__get_pull_request (pull_number=1)
+    Orchestrator->>Orchestrator: mcp__github__get_pull_request_files (pull_number=1)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom)
+    Orchestrator->>Orchestrator: Bash (description=List files in project starter directory)
+    Orchestrator->>Orchestrator: Bash (description=Read project README)
+    Orchestrator->>Orchestrator: mcp__github__search_repositories
+    a507d98-->>-Orchestrator: completed
+    ac89d77-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: Bash (description=Get current working directory)
+    Orchestrator->>Orchestrator: Bash (description=List files in current directory)
+    af4f43a-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: Bash (description=Check git history)
+    Orchestrator->>Orchestrator: Glob (pattern=src/**/*.ts)
+    Orchestrator->>Orchestrator: Glob (pattern=src/**/*.js)
+    Orchestrator->>Orchestrator: Bash (description=Search for mock or fixture files)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/README.md)
+    Orchestrator->>Orchestrator: Bash (description=List fixture files)
+    Orchestrator->>Orchestrator: Bash (description=List golden dataset files)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/mani)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/sql-)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/hard)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/xss.)
+    Orchestrator->>Orchestrator: Task (subagent_type=code-quality-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=test-coverage-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=refactoring-suggester)
+    Orchestrator->>+code_quality_analyzer: Task- code-quality-analyzer
+    Orchestrator->>+test_coverage_analyzer: Task- test-coverage-analyzer
+    Orchestrator->>+refactoring_suggester: Task- refactoring-suggester
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/sql-)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/sql-)
+    Orchestrator->>Orchestrator: Skill
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/sql-)
+    Orchestrator->>Orchestrator: Skill
+    Orchestrator->>Orchestrator: Grep (path=/voc/work/cd14715-claude-code-classroom/project/starter/tests)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/golden-dataset.test.ts)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/mani)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Grep (path=/voc/work/cd14715-claude-code-classroom/project/starter/tests)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/orchestrator.test.ts)
+    a666cde-->>-Orchestrator: completed
+    a939b0d-->>-Orchestrator: completed
+    a60a547-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: Task (subagent_type=code-quality-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=test-coverage-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=refactoring-suggester)
+    Orchestrator->>+code_quality_analyzer: Task- code-quality-analyzer
+    Orchestrator->>+test_coverage_analyzer: Task- test-coverage-analyzer
+    Orchestrator->>+refactoring_suggester: Task- refactoring-suggester
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/hard)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/hard)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/hard)
+    Orchestrator->>Orchestrator: Grep (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/mani)
+    Orchestrator->>Orchestrator: Grep (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/mani)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/golden-dataset.test.ts)
+    Orchestrator->>Orchestrator: Grep (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    a94d04f-->>-Orchestrator: completed
+    a6e9f29-->>-Orchestrator: completed
+    a6f48f7-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: Task (subagent_type=code-quality-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=test-coverage-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=refactoring-suggester)
+    Orchestrator->>+code_quality_analyzer: Task- code-quality-analyzer
+    Orchestrator->>+test_coverage_analyzer: Task- test-coverage-analyzer
+    Orchestrator->>+refactoring_suggester: Task- refactoring-suggester
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/xss.)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/xss.)
+    Orchestrator->>Orchestrator: Skill
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/xss.)
+    Orchestrator->>Orchestrator: Skill
+    Orchestrator->>Orchestrator: Glob (path=/voc/work/cd14715-claude-code-classroom/project/starter)
+    Orchestrator->>Orchestrator: Grep (path=/voc/work/cd14715-claude-code-classroom/project/starter/tests)
+    Orchestrator->>Orchestrator: mcp__eslint__lint-files (filePaths=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/xss.)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/golden-dataset.test.ts)
+    Orchestrator->>Orchestrator: Read (file_path=/voc/work/cd14715-claude-code-classroom/project/starter/tests/fixtures/golden-dataset/mani)
+    a4d8402-->>-Orchestrator: completed
+    a52b97c-->>-Orchestrator: completed
+    ae7414f-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: StructuredOutput
+    Orchestrator->>Orchestrator: StructuredOutput
+  </pre>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</body>
+</html>

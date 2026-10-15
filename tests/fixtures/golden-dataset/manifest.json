@@ -1,0 +1,23 @@
+{
+  "description": "Golden dataset for the code-quality-analyzer regression suite. Each fixture contains a deliberately injected, well-known issue. The agent's findings are checked against these expectations to catch regressions in prompt quality or model behavior over time.",
+  "fixtures": [
+    {
+      "file": "sql-injection.js",
+      "expectedCategory": "security",
+      "expectedMinSeverity": "high",
+      "description": "String-concatenated SQL query built from unsanitized user input."
+    },
+    {
+      "file": "hardcoded-secret.py",
+      "expectedCategory": "security",
+      "expectedMinSeverity": "high",
+      "description": "Hardcoded Stripe API key committed directly in source, plus unsafe yaml.load()."
+    },
+    {
+      "file": "xss.js",
+      "expectedCategory": "security",
+      "expectedMinSeverity": "medium",
+      "description": "User-controlled input inserted into innerHTML without escaping (XSS)."
+    }
+  ]
+}

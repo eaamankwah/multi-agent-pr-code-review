@@ -1,0 +1,47 @@
+labsuser@vscode:~/cd14715-claude-code-classroom/project/starter$ ls -la reports/ 
+total 136
+drwxr-xr-x 2 labsuser labsuser  6144 Sep  6 05:57 .
+drwxrwx--- 9 labsuser       48  6144 Sep  6 05:37 ..
+-rw-r--r-- 1 labsuser labsuser 14741 Sep  6 05:52 airaamane_simple-todo-app_1.html
+-rw-r--r-- 1 labsuser labsuser 41188 Sep  6 05:52 airaamane_simple-todo-app_1.json
+-rw-r--r-- 1 labsuser labsuser 15682 Sep  6 05:52 airaamane_simple-todo-app_1.md
+-rw-r--r-- 1 labsuser labsuser  5200 Sep  6 06:05 airaamane_simple-todo-app_2.html
+-rw-r--r-- 1 labsuser labsuser   535 Sep  6 06:05 airaamane_simple-todo-app_2.json
+-rw-r--r-- 1 labsuser labsuser  2855 Sep  6 06:05 airaamane_simple-todo-app_2.md
+-rw-r--r-- 1 labsuser labsuser  5315 Sep  6 05:57 airaamane_simple-todo-app_3.html
+-rw-r--r-- 1 labsuser labsuser   896 Sep  6 05:57 airaamane_simple-todo-app_3.json
+-rw-r--r-- 1 labsuser labsuser  2845 Sep  6 05:57 airaamane_simple-todo-app_3.md
+-rw-r--r-- 1 labsuser labsuser  5391 Sep  6 05:37 octocat_Hello-World_1.html
+-rw-r--r-- 1 labsuser labsuser  6986 Sep  6 05:37 octocat_Hello-World_1.json
+-rw-r--r-- 1 labsuser labsuser  3545 Sep  6 05:37 octocat_Hello-World_1.md
+labsuser@vscode:~/cd14715-claude-code-classroom/project/starter$ for pr in 1 2 3; do
+>   echo "=== PR #$pr summary ==="
+>   jq '.summary' "reports/airaamane_simple-todo-app_${pr}.json"
+> done
+=== PR #1 summary ===
+{
+  "totalFiles": 3,
+  "overallScore": 15,
+  "criticalIssues": 7,
+  "highPriorityTests": 14,
+  "refactoringOpportunities": 12
+}
+=== PR #2 summary ===
+{
+  "totalFiles": 0,
+  "overallScore": 0,
+  "criticalIssues": 0,
+  "highPriorityTests": 0,
+  "refactoringOpportunities": 0
+}
+=== PR #3 summary ===
+{
+  "totalFiles": 0,
+  "overallScore": 0,
+  "criticalIssues": 0,
+  "highPriorityTests": 0,
+  "refactoringOpportunities": 0
+}
+labsuser@vscode:~/cd14715-claude-code-classroom/project/starter$ grep -c '```mermaid' reports/airaamane_simple-todo-app_1.md 
+1
+labsuser@vscode:~/cd14715-claude-code-classroom/project/starter$ 

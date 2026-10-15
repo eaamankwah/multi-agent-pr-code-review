@@ -1,0 +1,133 @@
+{
+  "pullRequest": {
+    "owner": "octocat",
+    "repo": "Hello-World",
+    "number": 1
+  },
+  "fileReviews": [
+    {
+      "file": "README",
+      "codeQuality": {
+        "file": "README",
+        "issues": [
+          {
+            "line": 2,
+            "severity": "high",
+            "category": "maintainability",
+            "description": "Command and description text are concatenated without proper separation or formatting. Line 2 combines '$ mkdir ~/Hello-World' with 'Creates a directory for your project called \"Hello-World\" in your user directory' without line breaks or clear delimiters.",
+            "suggestion": "Add a line break or clear formatting separator between commands and descriptions. For example:\n$ mkdir ~/Hello-World\nCreates a directory for your project called \"Hello-World\" in your user directory"
+          },
+          {
+            "line": 3,
+            "severity": "high",
+            "category": "maintainability",
+            "description": "Same formatting issue as line 2. Command and description are concatenated without proper separation.",
+            "suggestion": "Separate the command from its description:\n$ cd ~/Hello-World\nChanges the current working directory to your newly created directory"
+          },
+          {
+            "line": 4,
+            "severity": "high",
+            "category": "maintainability",
+            "description": "Command and description are concatenated without proper separation or formatting.",
+            "suggestion": "Separate the command from its description:\n$ git init\nSets up the necessary Git files"
+          },
+          {
+            "line": 5,
+            "severity": "medium",
+            "category": "security",
+            "description": "Hardcoded absolute path '/Users/your_user_directory/Hello-World/.git/' exposes directory structure information. Documentation should avoid specific filesystem paths that could reveal system information or be misleading.",
+            "suggestion": "Use a relative path or placeholder notation. Change to: 'Initialized empty Git repository in ./Hello-World/.git/' or 'Initialized empty Git repository in [project-root]/Hello-World/.git/'"
+          },
+          {
+            "line": 2,
+            "severity": "medium",
+            "category": "maintainability",
+            "description": "Hyphenated project name 'Hello-World' in a directory path may cause issues on some systems or with certain tools. Directory naming conventions often prefer lowercase with underscores.",
+            "suggestion": "Use 'hello-world' (all lowercase) or 'hello_world' for better cross-platform compatibility. Update all references accordingly."
+          },
+          {
+            "line": 6,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "Incomplete command line. The line '$ touch README' is shown but doesn't indicate what should happen next or provide context about creating a README file.",
+            "suggestion": "Complete the documentation with a description or next steps. Add: '$ touch README\\nCreates an empty README file in your project directory'"
+          },
+          {
+            "line": 1,
+            "severity": "low",
+            "category": "style",
+            "description": "Generic title 'Hello World!' lacks descriptive context for what this documentation covers.",
+            "suggestion": "Use a more descriptive title such as 'Getting Started: Setting Up Your Hello World Project' or 'Initial Project Setup Guide'"
+          }
+        ],
+        "overallScore": 42,
+        "summary": "This README documentation has significant formatting and maintainability issues. Commands and their descriptions are concatenated without proper separation, making it difficult to read and follow. Additionally, hardcoded filesystem paths pose security concerns by revealing system structure information. The documentation structure needs restructuring with clear line breaks between commands and explanations, and paths should be generalized or use relative notation."
+      },
+      "testCoverage": {
+        "file": "README",
+        "hasTests": false,
+        "testFiles": [],
+        "untestedPaths": [],
+        "coverageEstimate": 0,
+        "summary": "This is a documentation file (README) rather than source code, so test coverage analysis is not applicable. Documentation files do not contain executable code that requires unit testing."
+      },
+      "refactorings": {
+        "file": "README",
+        "suggestions": [
+          {
+            "type": "simplify",
+            "location": "Lines 2-4 (command documentation)",
+            "impact": "low",
+            "description": "The inline descriptions of terminal commands could be better formatted for clarity. Currently, command and description are concatenated on the same line without clear separation.",
+            "before": "$ mkdir ~/Hello-WorldCreates a directory for your project called \"Hello-World\" in your user directory\n$ cd ~/Hello-WorldChanges the current working directory to your newly created directory",
+            "after": "$ mkdir ~/Hello-World\n  # Creates a directory for your project called \"Hello-World\" in your user directory\n$ cd ~/Hello-World\n  # Changes the current working directory to your newly created directory",
+            "benefits": "Improved readability and clarity between commands and their descriptions"
+          }
+        ],
+        "summary": "This is a documentation file rather than source code, so traditional refactoring does not apply. The primary improvement would be formatting the command documentation for better readability and clarity."
+      }
+    }
+  ],
+  "summary": {
+    "totalFiles": 1,
+    "overallScore": 42,
+    "criticalIssues": 0,
+    "highPriorityTests": 0,
+    "refactoringOpportunities": 1
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "Documentation Formatting",
+      "description": "Restructure README with proper line breaks between commands and descriptions. Commands and explanations are currently concatenated without separation, severely impacting readability.",
+      "files": [
+        "README"
+      ]
+    },
+    {
+      "priority": "medium",
+      "category": "Security",
+      "description": "Replace hardcoded absolute filesystem paths with relative paths or placeholders to avoid exposing system directory structure information.",
+      "files": [
+        "README"
+      ]
+    },
+    {
+      "priority": "low",
+      "category": "Completeness",
+      "description": "Add descriptions for all commands and provide a more descriptive title to improve documentation clarity and usability.",
+      "files": [
+        "README"
+      ]
+    }
+  ],
+  "metadata": {
+    "analyzedAt": "2026-09-06T00:00:00.000Z",
+    "duration": 99003,
+    "agentVersions": {
+      "code-quality-analyzer": "1.0.0",
+      "test-coverage-analyzer": "1.0.0",
+      "refactoring-suggester": "1.0.0"
+    }
+  }
+}

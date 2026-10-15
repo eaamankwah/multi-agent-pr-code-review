@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Review Report</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #f8f9fa;
+      color: #212529;
+    }
+    h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 12px; }
+    .summary {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin: 24px 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .metric { text-align: center; }
+    .metric-value { font-size: 2em; font-weight: bold; color: #3498db; }
+    .metric-label { color: #6c757d; font-size: 0.9em; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 12px; margin: 8px 0; border-radius: 4px; background: white; }
+    .rec-critical { border-left: 4px solid #e74c3c; }
+    .rec-high { border-left: 4px solid #f39c12; }
+    .rec-medium { border-left: 4px solid #3498db; }
+    .rec-low { border-left: 4px solid #27ae60; }
+    .priority { font-weight: bold; margin-right: 8px; }
+    .rec-critical .priority { color: #e74c3c; }
+    .rec-high .priority { color: #f39c12; }
+    .rec-medium .priority { color: #3498db; }
+    .rec-low .priority { color: #27ae60; }
+    footer { text-align: center; color: #6c757d; margin-top: 32px; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Code Review Report</h1>
+  
+  <div class="summary">
+    <div class="metric">
+      <div class="metric-value">42</div>
+      <div class="metric-label">Overall Score</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">1</div>
+      <div class="metric-label">Files Reviewed</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">0</div>
+      <div class="metric-label">Critical Issues</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">0</div>
+      <div class="metric-label">Tests Needed</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">1</div>
+      <div class="metric-label">Refactorings</div>
+    </div>
+  </div>
+
+  <h2>🎯 Top Recommendations</h2>
+  <ul>
+      <li class="rec-high">
+        <span class="priority">[HIGH]</span>
+        <strong>Documentation Formatting</strong>: Restructure README with proper line breaks between commands and descriptions. Commands and explanations are currently concatenated without separation, severely impacting readability.
+        <br><small>Files: README</small>
+      </li>
+    
+      <li class="rec-medium">
+        <span class="priority">[MEDIUM]</span>
+        <strong>Security</strong>: Replace hardcoded absolute filesystem paths with relative paths or placeholders to avoid exposing system directory structure information.
+        <br><small>Files: README</small>
+      </li>
+    
+      <li class="rec-low">
+        <span class="priority">[LOW]</span>
+        <strong>Completeness</strong>: Add descriptions for all commands and provide a more descriptive title to improve documentation clarity and usability.
+        <br><small>Files: README</small>
+      </li>
+    </ul>
+
+  <footer>
+    Generated at 2026-09-06T00:00:00.000Z • Duration: 99003ms
+  </footer>
+
+  <h2>🧭 Agent Execution Trace</h2>
+  <pre class="mermaid">
+sequenceDiagram
+    participant Orchestrator as Orchestrator
+    participant code_quality_analyzer as code-quality-analyzer
+    participant test_coverage_analyzer as test-coverage-analyzer
+    participant refactoring_suggester as refactoring-suggester
+    participant a761521 as a761521
+    participant ac0fc88 as ac0fc88
+    participant aac9a4f as aac9a4f
+    Orchestrator->>Orchestrator: mcp__github__get_pull_request (pull_number=1)
+    Orchestrator->>Orchestrator: mcp__github__get_pull_request_files (pull_number=1)
+    Orchestrator->>Orchestrator: mcp__github__get_file_contents (path=README)
+    Orchestrator->>Orchestrator: mcp__github__get_file_contents (path=README)
+    Orchestrator->>Orchestrator: Write (file_path=/tmp/README_review.txt)
+    Orchestrator->>Orchestrator: Task (subagent_type=code-quality-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=test-coverage-analyzer)
+    Orchestrator->>Orchestrator: Task (subagent_type=refactoring-suggester)
+    Orchestrator->>+code_quality_analyzer: Task- code-quality-analyzer
+    Orchestrator->>+test_coverage_analyzer: Task- test-coverage-analyzer
+    Orchestrator->>+refactoring_suggester: Task- refactoring-suggester
+    Orchestrator->>Orchestrator: Read (file_path=/tmp/README_review.txt)
+    Orchestrator->>Orchestrator: Read (file_path=/tmp/README_review.txt)
+    Orchestrator->>Orchestrator: Read (file_path=/tmp/README_review.txt)
+    Orchestrator->>Orchestrator: Skill
+    a761521-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: Grep (path=/tmp/README_review.txt)
+    ac0fc88-->>-Orchestrator: completed
+    aac9a4f-->>-Orchestrator: completed
+    Orchestrator->>Orchestrator: StructuredOutput
+  </pre>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</body>
+</html>
